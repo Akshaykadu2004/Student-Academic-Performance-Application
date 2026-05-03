@@ -2,59 +2,30 @@ import streamlit as st
 import numpy as np
 import joblib
 
-st.set_page_config(page_title="Student Predictor", page_icon="🎓")
-
 @st.cache_resource
 def load_model():
-    return joblib.load("model.pkl")
+    try:
+        model = joblib.load("model.pkl")
+        return model
+    except Exception as e:
+        st.error("❌ Model loading failed")
+        st.exception(e)
+        return None
 
 model = load_model()
 
-st.title("🎓 Student Performance Predictor")
+st.title("Student Academic Performance Predictor")
 st.write("Enter student details:")
 
-col1, col2 = st.columns(2)
+feature1 = st.number_input("Feature 1", value=0.0)
+feature2 = st.number_input("Feature 2", value=0.0)
+feature3 = st.number_input("Feature 3", value=0.0)
+feature4 = st.number_input("Feature 4", value=0.0)
 
-with col1:
-    study_hours = st.text_input("📘 Study Hours")
-    attendance = st.text_input("📊 Attendance (%)")
-
-with col2:
-    previous_score = st.text_input("📝 Previous Score")
-    sleep_hours = st.text_input("😴 Sleep Hours")
-
-# -------------------------------
-# Validation Function
-# -------------------------------
-def is_valid_number(value):
-    try:
-        float(value)
-        return True
-    except:
-        return False
-
-# -------------------------------
-# Prediction
-# -------------------------------
-if st.button("🔍 Predict Performance"):
-
-    inputs = [study_hours, attendance, previous_score, sleep_hours]
-
-    # Check empty fields
-    if any(val.strip() == "" for val in inputs):
-        st.warning("⚠️ Please fill all fields")
-    
-    # Check numeric values
-    elif not all(is_valid_number(val) for val in inputs):
-        st.error("❌ Only numeric values are allowed")
-    
+if st.button("Predict"):
+    if model is None:
+        st.warning("Model not loaded properly")
     else:
-        features = np.array([[
-            float(study_hours),
-            float(attendance),
-            float(previous_score),
-            float(sleep_hours)
-        ]])
-
+        features = np.array([[feature1, feature2, feature3, feature4]])
         prediction = model.predict(features)
-        st.success(f"📊 Predicted Performance: {prediction[0]}")
+        st.success(f"Prediction: {prediction[0]}")
