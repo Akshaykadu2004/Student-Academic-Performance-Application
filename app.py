@@ -3,49 +3,89 @@ import numpy as np
 import joblib
 
 # -------------------------------
+# Page Config
+# -------------------------------
+st.set_page_config(
+    page_title="Student Performance Predictor",
+    page_icon="🎓",
+    layout="centered"
+)
+
+# -------------------------------
 # Load Model
 # -------------------------------
 @st.cache_resource
 def load_model():
-    try:
-        model = joblib.load("model.pkl")
-        return model
-    except Exception as e:
-        st.error("❌ Model loading failed")
-        st.exception(e)
-        return None
+    return joblib.load("model.pkl")
 
 model = load_model()
 
 # -------------------------------
-# Title
+# Custom Styling
 # -------------------------------
-st.title("Student Academic Performance Predictor")
+st.markdown("""
+    <style>
+    .main {
+        background-color: #f5f7fa;
+    }
+    .title {
+        text-align: center;
+        font-size: 36px;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+    .subtitle {
+        text-align: center;
+        font-size: 18px;
+        color: #7f8c8d;
+        margin-bottom: 30px;
+    }
+    .stButton>button {
+        width: 100%;
+        border-radius: 10px;
+        height: 3em;
+        font-size: 16px;
+        background-color: #4CAF50;
+        color: white;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-st.write("Enter student details:")
+# -------------------------------
+# Title Section
+# -------------------------------
+st.markdown('<div class="title">🎓 Student Performance Predictor</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Enter student details to predict performance</div>', unsafe_allow_html=True)
 
 # -------------------------------
-# INPUTS (EDIT THESE if needed)
+# Input Section (Direct typing)
 # -------------------------------
-feature1 = st.number_input("Feature 1", value=0.0)
-feature2 = st.number_input("Feature 2", value=0.0)
-feature3 = st.number_input("Feature 3", value=0.0)
-feature4 = st.number_input("Feature 4", value=0.0)
+col1, col2 = st.columns(2)
+
+with col1:
+    study_hours = st.text_input("📘 Study Hours")
+    attendance = st.text_input("📊 Attendance (%)")
+
+with col2:
+    previous_score = st.text_input("📝 Previous Score")
+    sleep_hours = st.text_input("😴 Sleep Hours")
 
 # -------------------------------
 # Prediction
 # -------------------------------
-if st.button("Predict"):
+if st.button("🔍 Predict Performance"):
+    try:
+        # Convert inputs to float
+        features = np.array([[
+            float(study_hours),
+            float(attendance),
+            float(previous_score),
+            float(sleep_hours)
+        ]])
 
-    if model is None:
-        st.warning("Model not loaded properly")
-    else:
-        try:
-            features = np.array([[feature1, feature2, feature3, feature4]])
-            prediction = model.predict(features)
+        prediction = model.predict(features)
 
-            st.success(f"Prediction: {prediction[0]}")
+        st.success(f"📊 Predicted Performance: {prediction[0]}")
 
-        except Exception as e:
-            st.error("Prediction failed")
-            st.exception(e)
+    except:
+        st.error("❌ Please enter valid numeric values in all fields")
